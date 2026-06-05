@@ -19,13 +19,30 @@ from src.models import Document
 from src.store import EmbeddingStore
 
 SAMPLE_FILES = [
-    "data/python_intro.txt",
-    "data/vector_store_notes.md",
-    "data/rag_system_design.md",
-    "data/customer_support_playbook.txt",
-    "data/chunking_experiment_report.md",
-    "data/vi_retrieval_notes.md",
+    "data/building_robot.md",
+    "data/moving_robot.md",
+    "data/sensors.md",
+    "data/GUI_tutorial.md",
+    "data/actors.md",
+    "data/hotkeys.md",
+    "data/Manipulating_models.md",
+    "data/Model_insertion_fuel.md",
+    "data/sdf_worlds.md",
+    "data/spawn_urdf.md",
 ]
+
+CUSTOM_METADATA = {
+    "building_robot": {"category": "robot_modeling", "interface": "sdf_code"},
+    "moving_robot": {"category": "robot_control", "interface": "terminal_and_gui"},
+    "sensors": {"category": "robot_sensing", "interface": "sdf_code_and_terminal"},
+    "GUI_tutorial": {"category": "gui_basics", "interface": "gui"},
+    "actors": {"category": "animation", "interface": "sdf_code"},
+    "hotkeys": {"category": "gui_shortcuts", "interface": "gui_keyboard"},
+    "Manipulating_models": {"category": "gui_model_manipulation", "interface": "gui"},
+    "Model_insertion_fuel": {"category": "model_insertion", "interface": "gui_or_sdf"},
+    "sdf_worlds": {"category": "world_building", "interface": "sdf_code"},
+    "spawn_urdf": {"category": "model_spawning", "interface": "terminal_service"},
+}
 
 
 def load_documents_from_files(file_paths: list[str]) -> list[Document]:
@@ -45,11 +62,21 @@ def load_documents_from_files(file_paths: list[str]) -> list[Document]:
             continue
 
         content = path.read_text(encoding="utf-8")
+        
+        # Build metadata with custom topic and difficulty
+        meta = {
+            "source": str(path),
+            "extension": path.suffix.lower(),
+        }
+        stem = path.stem
+        if stem in CUSTOM_METADATA:
+            meta.update(CUSTOM_METADATA[stem])
+            
         documents.append(
             Document(
-                id=path.stem,
+                id=stem,
                 content=content,
-                metadata={"source": str(path), "extension": path.suffix.lower()},
+                metadata=meta,
             )
         )
 

@@ -14,9 +14,28 @@ class KnowledgeBaseAgent:
     """
 
     def __init__(self, store: EmbeddingStore, llm_fn: Callable[[str], str]) -> None:
-        # TODO: store references to store and llm_fn
-        pass
+        self.store = store
+        self.llm_fn = llm_fn
 
     def answer(self, question: str, top_k: int = 3) -> str:
-        # TODO: retrieve chunks, build prompt, call llm_fn
-        raise NotImplementedError("Implement KnowledgeBaseAgent.answer")
+        # Retrieve relevant chunks from the vector store
+        chunks = self.store.search(question, top_k=top_k)
+        
+        # Build prompt with chunks as context
+        context_items = []
+        for idx, chunk in enumerate(chunks, start=1):
+            context_items.append(f"[Source {idx}]: {chunk['content']}")
+            
+        context_str = "\n\n".join(context_items)
+        
+        prompt = (
+            "You are an expert assistant. Answer the following question using only the provided context.\n"
+            "If you cannot find the answer, state that the context does not contain enough information.\n\n"
+            f"Context:\n{context_str}\n\n"
+            f"Question: {question}\n\n"
+            "Answer:"
+        )
+        
+        # Call the LLM with the formatted prompt
+        return self.llm_fn(prompt)
+
